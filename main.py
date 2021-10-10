@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, status, Response, HTTPException
-from . import schemas, models
-from .database import engine, SessionLocal
 from sqlalchemy.orm import Session
+from blog import models, schemas
+from blog.database import engine, SessionLocal
 
 # from . import models
 # dot represent importing schemas file from same directory
@@ -37,12 +37,12 @@ def destroy(id, db: Session = Depends(get_db)):
 
 # we require request:schemas.Blog because if you remove that you won't get parameter in put that is title and body
     # db.query(models.Blog).filter(models.Blog.id == id).update({'title': 'updated title'}) this for only updating title
-@app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED)
+@app.put('/blog/{id}', status_code=200)
 def update(id, request: schemas.Blog, db: Session = Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id)
     if not blog.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'Blog with id {id} not found')
-    blog.update(request)
+    blog.update({'title': request.title, 'body': request.body}) #HERE 
     db.commit()
     return 'updated successfully'
 
